@@ -26,8 +26,8 @@ OBJS  = debug.o screen.o asm.o panic.o\
 		syscall.o\
 		multitask/task.o multitask/tss.o multitask/ldt.o multitask/schedule.o\
 		lab.o\
-		fs/hd.o fs/fs.o
-
+		fs/hd.o fs/fs.o\
+		semaphore.o
 #mm/paging.o 
 
 kernel.o: $(OBJS)

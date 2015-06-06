@@ -12,6 +12,10 @@ _syscall0(int, getpid);
 _syscall1(int, putch, int, ch);
 _syscall0(int, ls);
 _syscall0(int, tree);
+_syscall1(int, sem_apply, int, value);
+_syscall1(int, sem_free, int, num);
+_syscall1(int, sem_wait, int, num);
+_syscall1(int, sem_signal, int, num);
 
 //task_t *create_task_from_mem(uint32_t base, uint32_t length) { // stack size included
 task_t* create_task_from_lab(void* base, void* endoflab, uint32_t stack) {

@@ -5,4 +5,5 @@
 *.swp
 *.tmp
 *.img.bck
-mountpoint
+mountpoint/
+*.com

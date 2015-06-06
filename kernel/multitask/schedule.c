@@ -4,12 +4,7 @@
 
 
 // FIFO schedule algorithm, no efficient
-volatile task_t* __get_next_task(volatile task_t * cur_task) {
-//  volatile task_t * i = cur_task;
-//  do{
-//      kprintf("[task: %x next: %x]->", i, i->next);
-//      i = i->next;
-//  } while (i == cur_task);
+volatile task_t* get_next_task(volatile task_t * cur_task) {
     task_t * tmp = cur_task->next;
     while (tmp != cur_task && tmp->status!=TASK_STATUS_READY) 
         tmp = tmp->next;
@@ -18,7 +13,7 @@ volatile task_t* __get_next_task(volatile task_t * cur_task) {
 
 
 // new way to do it right
-volatile task_t* get_next_task(volatile task_t * cur_task) {
+volatile task_t* __get_next_task(volatile task_t * cur_task) {
     cur_task->counter--;
     if (cur_task->counter > 0) return cur_task;
 

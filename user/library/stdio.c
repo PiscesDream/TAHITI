@@ -62,8 +62,14 @@ int printf(const char *fmt, ...) {
                 puthex(parameter);
             else if (*fmt == 'b')
                 putbin(parameter);
-            else if (*fmt == 'd')
-                putdec(parameter);
+            else if (*fmt == 'd') {
+                if ((int)(parameter) < 0) {
+                    putch('-');
+                    putdec(-(int)parameter);
+                }
+                else 
+                    putdec(parameter);
+            }
             else if (*fmt == 's')
                 puts((char*)parameter);
         }

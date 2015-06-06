@@ -18,14 +18,14 @@ typedef struct message {
     struct message * next;
 } message_t;
 
-typedef struct task {
-    struct task *next;
+typedef struct __task_t {
+    struct __task_t *next;
     
     // fork
     uint32_t children_count;
-    struct task *children;
-    struct task *brothers;
-    struct task *parent;
+    struct __task_t *children;
+    struct __task_t *brothers;
+    struct __task_t *parent;
 
     // basic
     uint32_t status;
@@ -43,6 +43,9 @@ typedef struct task {
     // communicate
     message_t *message_box;
     uint32_t message_count;
+
+    // used in semaphore;
+    struct __task_t * semaphore_next;
 
 
 //    uint16_t tss_gdt_id;
@@ -78,6 +81,7 @@ task_t *create_task_from_mem(uint32_t base, uint32_t length, uint32_t need_sti);
 #define DUMMY_EIP 0x000001
 
 
-
+task_t * task_queue;
+task_t * cur_task;
 
 #endif

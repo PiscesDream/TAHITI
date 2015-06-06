@@ -11,10 +11,14 @@
 #include <stddef.h>
 #include <syscall.h>
 #include <schedule.h>
+#include <semaphore.h>
 
-volatile task_t *cur_task=0;
-volatile task_t *task_queue=0;
-volatile uint32_t pid_counter = 0;
+//  volatile task_t *cur_task=0;
+//  volatile task_t *task_queue=0;
+//  volatile uint32_t pid_counter = 0;
+task_t *cur_task=0;
+task_t *task_queue=0;
+uint32_t pid_counter = 0;
 extern uint32_t gdt_count;
 extern uint32_t read_eip();
 
@@ -30,14 +34,19 @@ task_t* create_empty_task(uint32_t need_sti) {
     task->counter = task->priority = 1;
 
     if (task_queue) { //queue not empty
-        volatile task_t * tmp = task_queue;
+        task_t * tmp = task_queue;
         task->next = tmp->next;
         tmp->next = task;
     }
     else {
         task_queue = task->next = task;
-    //    kprintf("new: [task: %x next: %x]\n", task, task->next);
     }
+
+//  kprintf("\nnew task: %x", task);
+//  task_t * i = task_queue;
+//  kprintf("\n[task: %x next: %x task_queue: %x]-->", i, i->next, task_queue);
+//  i = i->next;
+//  kprintf("\n[task: %x next: %x task_queue: %x]-->", i, i->next, task_queue);
 
     // circumlar link list
     if (need_sti) sti();
@@ -76,6 +85,7 @@ void task_switch(exception_status_t *t) {
     asm volatile("movl %eax, %eax");
     if (!cur_task) return; // no task or only one task
 
+
     task_t* next_task = (task_t*)get_next_task(cur_task);
     if (next_task) {
         cur_task->estatus = *t;
@@ -92,7 +102,16 @@ void task_switch(exception_status_t *t) {
 //        move_stack(next_task->estatus.ss, next_task->estatus.esp, cur_task->estatus.esp);
 //    scr_printf("copy done.");
 
+
+//  kprintf("\n");
+//  task_t * i = task_queue;
+//  do{
+//      kprintf("[task: %x status: %x next: %x ]-->", i->pid, i->status, i->next->pid);
+//      i = i->next;
+//  } while (i != task_queue);
+
         cur_task = next_task;
+
 
   scr_temp_move_to(24, 0);
   kprintf("Current PID: %d      ", cur_task->pid); 
@@ -254,10 +273,13 @@ void init_multitask() {
     pid_counter = 0;
 
 //    asm volatile("pushf; popl %eax; or $0x3000, %eax; pushl %eax; popf;");
-    cur_task = task_queue = (volatile task_t*)create_empty_task(0);
+    cur_task = task_queue = (task_t*)create_empty_task(0);
 scr_printf("create 0 task at %x\n", (uint32_t)cur_task);
     cur_task->length = 0x90000; 
     cur_task->base = 0x00000;
+    
+    // clean semaphore
+    init_semaphore();
 
     sti();
 }
@@ -329,16 +351,15 @@ message_t * task_take_message() {
 int fork_for_syscall(exception_status_t * t) {
     task_t *parent_task = (task_t*)cur_task;
     task_t *new_task = create_task_from_mem(cur_task->base, cur_task->length, 0);
-    if (!new_task) {
-        t->eax = -1;
+    if (!new_task) 
         return -1;
-    }
+
+    new_task->estatus.ds = cur_task->estatus.ds;
 
     new_task->brothers = cur_task->children;
     cur_task->children = new_task;
     cur_task->children_count++;
     new_task->parent = (task_t*)cur_task;
-
     
     new_task->estatus.eip = t->eip;
     new_task->estatus.eflags = t->eflags;

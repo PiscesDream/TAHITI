@@ -9,15 +9,15 @@ mm_node_t *mm_node_cur, *mm_node_first;
 uint32_t mm_minsize = sizeof(mm_node_t);
 
 // linear allocation
-uint32_t __kmalloc(uint32_t size) {
+uint32_t kmalloc(uint32_t size) {
     if (size < mm_minsize) size = mm_minsize;
     uint32_t tmp = mem_addr;
     mem_addr += size; 
     return tmp;
 }
-void __kfree(uint32_t addr) {}
+void kfree(uint32_t addr) {}
 
-uint32_t kmalloc(uint32_t size) {
+uint32_t __kmalloc(uint32_t size) {
 //  mm_node_t * mm_node_print = mm_node_first;
 //  printf("node %x, last %x, next %x, space %x", 
 //          mm_node_print, mm_node_print->last, mm_node_print->next, mm_node_print->size);
@@ -59,7 +59,7 @@ uint32_t kmalloc(uint32_t size) {
     return addr;
 }
 
-void kfree(uint32_t addr) {
+void __kfree(uint32_t addr) {
     mm_node_t * mm_node_ptr = (mm_node_t*)(addr - sizeof(mm_node_t)); // get the blank info
 
     mm_node_ptr->size =(uint32_t)mm_node_ptr->next - (uint32_t)mm_node_ptr - sizeof(mm_node_t);
