@@ -1,0 +1,8 @@
+*.img
+*.bin
+*.o
+*.gch
+*.swp
+*.tmp
+*.img.bck
+mountpoint

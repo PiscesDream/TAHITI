@@ -1,0 +1,12 @@
+bximage
+mkfs.fat
+fdisk xx.img
+
+losetup -d /dev/loop0
+losetup /dev/loop0 xx.img -o loop
+mount -t fat12 /dev/loop0 /mnt/xxx
+cd /mnt/xxx
+umount /dev/loop0
+losetup -d /dev/loop0
+
+

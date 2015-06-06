@@ -1,0 +1,9 @@
+display_library: sdl
+
+
+ata0-master: type=disk, path=disk.img, mode=flat, cylinders=80, heads=2, spt=18, translation=none
+
+boot: disk 
+log: bochsout.txt
+
+megs: 16

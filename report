@@ -1,0 +1,13 @@
+macro -> to prevent reload
+stdint -> ISO/POSIX standard
+
+remove paging
+The X86 architecture has support for hardware-assisted task switching by way of a list of Task State Segments (TSS). In this tutorial set we have (like BSD, linux and most x86 operating systems) decided against using it and opted instead for a software based solution. The main reason for this is that hardware task switching is actually not much faster than software, and software task switching is far more portable between platforms
+
+In many operating systems, the full features of the TSS are not used.[36] This is commonly due to portability concerns or due to the performance issues created with hardware task switches.[36] As a result many operating systems use both hardware and software to create a multitasking system.[37]
+
+ss change when iret to a differnt privilege level task
+
+two way to communicate:
+    share ds
+    message

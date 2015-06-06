@@ -1,0 +1,70 @@
+    sector: db 1+SETUP_LEN  ; >= 1
+    head: db 0              ; >= 0
+    track: dw 0             ; >= 0
+    sector_limit: db 0 
+    head_limit: db 0 
+    ;track_limit: dw 0 
+    read_interations: dw 0
+read_floppy:
+    mov ah, 08h
+    mov dl, 0
+    int 13h
+
+    ; get disk parameter
+    mov byte[head_limit], dh
+    mov byte[sector_limit], cl
+    and byte[sector_limit], 0b0011_1111 
+;   mov byte[track_limit], ch
+;   shr cl, 6
+;   mov byte[track_limit+1], cl
+
+    ; calc how many times to run
+    xor dx, dx
+    mov ax, SYS_SIZE 
+    mov bx, 0x100 
+    div bx
+    mov cx, ax
+    
+    xor bx, bx
+    mov ax, SYS_INIT_SEG 
+    mov es, ax 
+loading: 
+    ; read
+    push cx
+    mov ah, 02h
+    mov al, 00h ; 256 sectors at a time 
+    mov ch, byte[track]
+    mov cl, byte[sector]
+    mov dl, 0
+    mov dh, byte[head]
+    int 13h
+    pop cx
+    
+    ; calc next es:bx
+    xor bx, bx
+    mov ax, es
+    add ax, 20h
+    mov es, ax
+
+    ; find the next CHS
+    push cx
+    mov cx, 256
+    .chsloop:
+        mov al, byte[sector]
+        inc al
+        cmp al, byte[sector_limit]
+        jng .end
+            mov byte[sector], 1
+            inc byte[head]
+            mov al, byte[head]
+            cmp al, byte[head_limit] 
+            jna .end
+                mov byte[head], 0
+                inc byte[track]
+        .end:
+    loop .chsloop
+    pop cx
+
+    loop loading
+    ret
+

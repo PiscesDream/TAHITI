@@ -1,0 +1,267 @@
+#include <stdint.h>
+#include <task.h>
+#include <string.h>
+#include <utils/system.h>
+#include <utils/port.h>
+#include <heap.h>
+#include <debug.h>
+#include <screen.h>
+#include <gdt.h>
+#include <tss.h>
+#include <ldt.h>
+
+volatile task_t *cur_task=0;
+volatile task_t *task_queue=0;
+uint32_t pid_counter = 0;
+extern uint32_t gdt_count;
+extern void jmp_tss(uint32_t);
+extern uint32_t read_eip();
+
+task_t* create_empty_task() {
+    task_t * task = (task_t*)kmalloc(sizeof(task_t)); 
+    tss_entry_t *tss = create_tss();
+
+    task->tss_gdt_id = gdt_count-1;
+    task->tss_slt = selector(task->tss_gdt_id,0b000); // tss selector in gdt
+scr_printf("tss_slt is %x(gdt[%d]) at %x\n", task->tss_slt, task->tss_gdt_id, (uint32_t)&task->tss_slt);
+    task->tss_base = (uint32_t)tss;
+    task->tss = tss;
+//    task->tss_limit = sizeof(tss_entry_t);
+    
+    task->status = TASK_STATUS_READY;
+    task->pid = pid_counter++; 
+    task->privilege = 0x0; // fixed
+
+    if (task_queue) { //queue not empty
+        task_t * tmp = (task_t *)task_queue;
+        while (tmp->next) tmp = tmp->next;
+        task->next = tmp->next;
+        tmp->next = task;
+    }
+    else
+        task->next = task;
+    // circumlar link list
+}
+
+static void __set_task_from_mem(task_t *, uint32_t, uint32_t);
+task_t *create_task_from_mem(uint32_t base, uint32_t length) { // stack size included
+    // the data and code share the same space 
+    cli();
+
+    task_t* task = create_empty_task(); 
+
+    task->length = length; 
+    task->base = kmalloc(task->length);
+
+    __set_task_from_mem(task, base, length);
+
+scr_printf("memset %x\n",task->base);
+    memset((void*)task->base, 0, task->length);
+scr_printf("memcpy %x <- %x\n",task->base, base);
+    memcpy((void*)task->base, (void*)base, length);
+
+
+    sti();
+    return task;
+}
+static void __set_task_from_mem(task_t * task, uint32_t base, uint32_t length) {
+    ldt_entry_t *ldt = (ldt_entry_t*)kmalloc(sizeof(ldt_entry_t)*2); // code and data
+scr_printf("create new ldt at %x\n", (uint32_t)ldt);
+    _set_gdt_gate(gdt_count++, (uint32_t)ldt, sizeof(ldt_entry_t)*2, GDT_TEMPLATE_LDT);
+scr_printf("create new ldt at gdt[%d]\n", gdt_count-1);
+
+    task->ldt_gdt_id = gdt_count-1;
+    task->ldt_slt = selector(task->ldt_gdt_id, 0b000);
+    task->ldt_base = (uint32_t)ldt;
+    task->ldt_limit = sizeof(ldt_entry_t)*2;
+    
+    set_ldt_gate(ldt, base, length, LDT_TEMPLATE_CODE); 
+    set_ldt_gate(ldt+1, base, length, LDT_TEMPLATE_DATA); 
+scr_printf("create new ldt entries at ldt\n");
+
+    tss_entry_t *tss = (tss_entry_t *)task->tss_base;
+    tss->ss = tss->ss0 = selector(1, 0b100);
+    tss->cs = selector(0, 0b100);
+    tss->eflags = 0x40;
+    tss->es = tss->ds = tss->fs = tss->gs = tss->esp0 = length;
+    tss->ldt = task->ldt_slt;
+    tss->iomap_base = 0;//dk here
+}
+
+
+volatile task_t* get_next_task(volatile task_t * cur_task) {
+    // can schedule here
+    task_t * tmp = cur_task->next;
+    while (tmp != cur_task && tmp->status!=TASK_STATUS_READY) tmp = tmp->next;
+    if (tmp == cur_task) return 0;
+    else return tmp;
+}
+
+void task_switch() {
+    if (!cur_task || !cur_task->next) return; // no task or only one task
+    cur_task = get_next_task(cur_task);
+    if (cur_task)
+        jmp_tss((uint32_t)&cur_task->tss_base);
+}
+
+void exit(int a) {
+    cur_task->status = TASK_STATUS_DEAD;
+    task_switch();
+}
+
+int fork() {
+    cli();
+    task_t *new_task = create_task_from_mem(cur_task->base, cur_task->length),
+           *parent_task = (task_t*)cur_task;
+    uint32_t eip = read_eip();
+    if (cur_task == parent_task) {
+        uint32_t ebp, esp;
+        asm volatile("mov %%ebp, %0; mov %%esp, %1" : "=r" (ebp), "=r"(esp));
+        new_task->tss->esp = esp;
+        new_task->tss->ebp = ebp;
+        new_task->tss->eip = eip;
+        sti();
+        return new_task->pid; // for parent
+    }
+
+    // missing EOI when forking
+    outb_pause(0x20, 0x20);
+    return 0;// for child
+}
+
+void wait() {
+
+}
+
+void init_multitask() {
+    cli();
+
+    cur_task = task_queue = (volatile task_t*)create_empty_task();
+scr_printf("create new task at %x\n", (uint32_t)cur_task);
+
+    cur_task->length = 0x90000; 
+    cur_task->base = 0x00000;
+
+    __set_task_from_mem((task_t*)cur_task, 0x0, 0x90000);
+
+    cur_task->tss->eip = read_eip();
+    asm volatile("mov %%esp, %0":"=r"(cur_task->tss->esp));
+    asm volatile("mov %%ebp, %0":"=r"(cur_task->tss->ebp));
+
+scr_printf("tss_slt %x\n", cur_task->tss_slt);
+scr_printf("ldt in tss %x\n", cur_task->tss->ldt);
+    jmp_tss((uint32_t)&cur_task->tss_base);
+    sti();
+}
+
+
+
+
+
+
+
+//  void init_multitask() {
+//      cli();
+
+//      cur_task = task_queue = (task_t *)kmalloc(sizeof(task_t));
+//      cur_task->id = ++pid_counter;
+//      cur_task->s_top = 0x90000;
+//      asm volatile("mov %%esp, %0":"=r"(cur_task->esp));
+
+//      sti();
+//  }
+
+//  uint32_t fork_stack(uint32_t size) {
+//      uint32_t len = cur_task->s_top - cur_task->esp;
+//  //  scr_puts("len");
+//  //  scr_puthex(len);
+
+//      uint32_t addr = kmalloc(size);
+//  //  scr_puts("\naddr");
+//  //  scr_puthex(addr);
+
+//      memset((void *)addr, 0, size);
+//  //  scr_puts("\nready to memcpy");
+
+//      memcpy((void *)(addr+size-len), (void *)cur_task->esp, len); 
+//  //  scr_puts("\ndest");
+//  //  scr_puthex(addr+size-len);
+//  //  scr_puts("\n");
+//  //  scr_puthex(cur_task->esp);
+//  //  scr_puts("\n");
+//  //  scr_puthex(len);
+
+//  //  __debug_smile();
+
+//      return addr+size;
+//  }
+
+//  int fork() {
+//      cli();
+
+//      task_t *parent_task = (task_t *)cur_task;
+//      task_t *new_task = (task_t*)kmalloc(sizeof(task_t));
+//      asm volatile("mov %%esp, %0":"=r"(cur_task->esp));
+//      new_task->s_top = fork_stack(0x1000);
+//      new_task->id = ++pid_counter;
+//      new_task->next = 0;
+
+//      task_t *tmp = (task_t*)task_queue;
+//      while (tmp->next) tmp = tmp->next;
+//      tmp->next = new_task;
+
+//      uint32_t eip = read_eip();
+//      if (cur_task == parent_task) {
+//          uint32_t ebp, esp;
+//          asm volatile("mov %%ebp, %0; mov %%esp, %1" : "=r" (ebp), "=r"(esp));
+//          new_task->esp = new_task->s_top-(parent_task->s_top-esp);
+//          new_task->ebp = new_task->s_top-(parent_task->s_top-ebp);
+//          new_task->eip = eip;
+//          sti();
+//          return new_task->id; // for parent
+//      }
+//      
+//      // missing EOI when forking
+//      outb_pause(0x20, 0x20);
+//      return 0;// for child
+//  }
+
+//  void task_switch() {
+//      if (!cur_task) return;
+
+//      uint32_t eip = read_eip();
+//      if (eip == DUMMY_EIP) return;
+//      uint32_t esp, ebp;
+//      asm volatile("mov %%ebp, %0; mov %%esp, %1" : "=r" (ebp), "=r"(esp));
+
+//  //scr_puts("current task:\n");
+//  //scr_put_task(cur_task);
+//      cur_task->eip = eip;
+//      cur_task->ebp = ebp;
+//      cur_task->esp = esp;
+
+//      cur_task = get_next_task(cur_task);
+//      esp = cur_task->esp;
+//      ebp = cur_task->ebp;
+
+//  //scr_puts("Switch to :");
+//  //scr_put_task(cur_task);
+
+//      scr_temp_move_to(24, 0);
+//      scr_puts("Current PID: ");
+//      scr_puthex(cur_task->id);
+//      scr_puts("jmp to :");
+//      scr_puthex(cur_task->eip);
+//      scr_temp_retrieve();
+
+//      asm volatile("cli;" 
+//                   "mov %0, %%ecx;"
+//                   "mov %1, %%esp;" 
+//                   "mov %2, %%ebp;" 
+//                   "mov %3, %%eax;"
+//                   "sti;" 
+//                   "jmp *%%ecx"
+//                    ::"r"(cur_task->eip), "r"(esp), "r"(ebp), "i"(DUMMY_EIP));
+//  }
+
+
