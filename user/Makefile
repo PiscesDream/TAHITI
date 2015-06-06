@@ -6,7 +6,8 @@ CPP	+= -Iinclude -I./
 
 ARCHIVES = 
 DRIVERS  =
-LIBS	 = library/syscall.o library/stdio.o library/system.o library/string.o library/ctype.o 
+LIBS	 = library/syscall.o library/stdio.o library/system.o library/string.o library/ctype.o library/semaphore.o\
+		   library/stdlib.o
 
 %.o: %.nasm
 	$(NASM) -o $@ $<

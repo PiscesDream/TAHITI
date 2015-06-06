@@ -15,6 +15,12 @@
 #define __NR_ls         10 // 0
 #define __NR_get_key    11 // 0
 #define __NR_tree       12 // 0
+#define __NR_sem_apply  13 // 1
+#define __NR_sem_free   14 // 1
+#define __NR_sem_wait   15 // 1
+#define __NR_sem_signal 16 // 1
+
+
 
 #define _syscall0(type,name) \
   type syscall_##name(void) \
@@ -70,5 +76,10 @@ int syscall_wait();
 int syscall_getpid();
 int syscall_putch(char);
 int syscall_ls();
+int syscall_tree();
+int syscall_sem_apply();
+int syscall_sem_wait();
+int syscall_sem_signal();
+int syscall_sem_free();
 
 #endif

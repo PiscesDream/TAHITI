@@ -14,6 +14,10 @@ extern int share_fork_for_syscall(exception_status_t * t);
 extern int getpid_for_syscall(exception_status_t * t);
 extern int get_key_for_syscall(exception_status_t * t);
 extern int tree_for_syscall(exception_status_t * t);
+extern int sem_apply_for_syscall(exception_status_t *t);
+extern int sem_free_for_syscall(exception_status_t *t);
+extern int sem_wait_for_syscall(exception_status_t *t);
+extern int sem_signal_for_syscall(exception_status_t *t);
 
 static void syscall_handler(exception_status_t *t);
 static void *syscalls[64] = {
@@ -29,7 +33,11 @@ static void *syscalls[64] = {
     &putch_for_syscall,
     &ls_for_syscall,
     &get_key_for_syscall,
-    &tree_for_syscall
+    &tree_for_syscall,
+    &sem_apply_for_syscall,
+    &sem_free_for_syscall,    
+    &sem_wait_for_syscall,
+    &sem_signal_for_syscall
 };
 static uint32_t syscalls_count = 64;
 
@@ -50,4 +58,6 @@ void syscall_handler(exception_status_t *t) {
 //  _syscall1(int, scr_putdec, uint32_t, t);
 //  _syscall1(int, scr_puthex, uint32_t, t);
 // syscalls should be defined in the user program
+
+
 

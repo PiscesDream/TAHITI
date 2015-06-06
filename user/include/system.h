@@ -5,5 +5,6 @@ int wait();
 int getpid();
 int fork();
 int exit(int);
+void switch_task();
 
 #endif

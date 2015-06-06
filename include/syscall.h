@@ -18,6 +18,10 @@ void init_syscall();
 #define __NR_ls         10 // 0
 #define __NR_get_key    11 // 0
 #define __NR_tree       12 // 0
+#define __NR_sem_apply  13 // 1
+#define __NR_sem_free   14 // 1
+#define __NR_sem_wait   15 // 1
+#define __NR_sem_signal 16 // 1
 
 #define _syscall0(type,name) \
   type syscall_##name(void) \

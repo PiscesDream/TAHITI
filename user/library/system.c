@@ -22,3 +22,7 @@ int wait() {
 int getpid() {
     return syscall_getpid();
 }
+
+void switch_task() {
+    asm volatile("int $127");
+}

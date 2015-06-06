@@ -153,9 +153,15 @@ int scr_printf(const char *fmt, ...)
                 scr_puthex(parameter);
             else if (*fmt == 'b')
                 scr_putbin(parameter);
-            else if (*fmt == 'd')
-                scr_putdec(parameter);
-            else if (*fmt == 's')
+            else if (*fmt == 'd') {
+                if ((int)(parameter) < 0) {
+                    scr_putch('-');
+                    scr_putdec(-(int)parameter);
+                }
+                else 
+                    scr_putdec(parameter);
+            }
+              else if (*fmt == 's')
                 scr_puts((char*)parameter);
         }
         fmt++;
@@ -190,8 +196,14 @@ int user_printf(const char *fmt, ...) {
                 scr_puthex(parameter);
             else if (*fmt == 'b')
                 scr_putbin(parameter);
-            else if (*fmt == 'd')
-                scr_putdec(parameter);
+            else if (*fmt == 'd') {
+                if ((int)(parameter) < 0) {
+                    scr_putch('-');
+                    scr_putdec(-(int)parameter);
+                }
+                else 
+                    scr_putdec(parameter);
+            }
             else if (*fmt == 's')
                 scr_puts((char*)parameter);
         }
