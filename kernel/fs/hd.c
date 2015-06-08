@@ -17,12 +17,13 @@ void load_main_hd(hd_info_t * hd) {
 }
 
 
+// heredebug
 uint32_t get_next_cluster(int cluster) {
     int cur_sector = cluster * 3/(2*main_hd->BPB_BytesPerSec)+1;
-    if (cur_sector != __hd_fat_buffer_sector) {
+    //if (cur_sector != __hd_fat_buffer_sector) {
         __hd_fat_buffer_sector = cur_sector; 
         read_hd_to_addr(cur_sector, __hd_fat_buffer);
-    }
+    //}
 
     uint16_t i1, i2, i3, answer;
     int offset = cluster/4 * 6;
@@ -61,11 +62,13 @@ void* read_hd_fat(uint32_t cluster, uint32_t * cluster_count) {
     void *addr;
     addr = (void *)kmalloc((*cluster_count) * 512);
 
-    uint32_t base_sector = -2 + (main_hd->BPB_RootEntCnt * 32/main_hd->BPB_BytesPerSec) + 
-                2 * ((main_hd->BPB_FATSz16-1)/main_hd->BPB_SecPerClus+1) + 1; 
+    uint32_t base_sector = 31;
+    //-2 + (main_hd->BPB_RootEntCnt * 32/main_hd->BPB_BytesPerSec) + 2 * ((main_hd->BPB_FATSz16-1)/main_hd->BPB_SecPerClus+1) + 1; 
     uint32_t i = 0;
+//kprintf("base sector: %d\n", base_sector); 
     for (i = 0; i < *cluster_count; ++i) {
         read_hd_to_addr(cluster+base_sector, addr+i*512); 
+//kprintf("reading sector %x to %x content %x\n", cluster+base_sector,addr+i*512, *(uint32_t*)(addr+i*512));
         cluster = get_next_cluster(cluster);
     }
     return addr;

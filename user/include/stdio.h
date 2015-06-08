@@ -12,5 +12,6 @@ int printf(const char *fmt, ...) ;
 char getch();
 void gets(char * s);
 int scanf(const char *fmt, ...);
+//void __puts(char *s);
 
 #endif

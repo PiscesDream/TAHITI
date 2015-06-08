@@ -46,7 +46,8 @@ void keyboard_handler(exception_status_t *r) {
     }
     else {
         push_kb_buffer(scancode);
-        scr_putch(kbdus[scancode]);
+//        scr_putch(kbdus[scancode]);
+
 //      uint8_t c =pop_kb_buffer();
 //      kprintf("get: %x(%c), pop: %x(%c)", scancode, kbdus[scancode], c, kbdus[c]);
 //      scr_putch(kbdus[pop_kb_buffer()]);

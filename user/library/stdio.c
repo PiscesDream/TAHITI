@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <syscall.h>
 #include <kblookup.h>
 #include <stdint.h>
 #include <ctype.h>
@@ -133,4 +134,6 @@ int scanf(const char *fmt, ...)
     ap = 0;
 }
 
-
+//  void __puts(char * s) {
+//      syscall_puts(s);
+//  }

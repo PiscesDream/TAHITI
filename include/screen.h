@@ -15,9 +15,10 @@ void scr_put_task(task_t*);
 //void scr_retrieve_cursor();
 //void scr_set_hidemode(int setting);
 int scr_printf(const char *fmt, ...);
-int user_printf(const char *fmt, ...);
-#define printf user_printf
+//int user_printf(const char *fmt, ...);
+//#define printf user_printf
 #define kprintf scr_printf
+#define printf scr_printf 
 
 
 

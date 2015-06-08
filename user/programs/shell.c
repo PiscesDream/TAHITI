@@ -2,9 +2,15 @@
 #include <system.h>
 #include <stdio.h>
 
+#define CMD_MAX 128
 char cmd[128];
 int cmd_len;
 int cmd_counter = 0;
+
+char * buildin[] = {"ls", "cd", "tree", "cat", "exec"};
+//int buildin_count = 5; 
+
+extern int syscall_exec_cmd();
 
 int main()
 {
@@ -12,7 +18,9 @@ int main()
     cmd_len = 0;
     while (1)
     {
-        printf("\r\nIN [%d]: ", cmd_counter);
+        printf("ROOT@TAHITI:");
+        print_path();
+        printf("$ ");
 
         while (1)
         {
@@ -20,16 +28,18 @@ int main()
             if (key=='\b')
             {
                 if (cmd_len == 0) continue;
-                type_char('\b');
-                type_char(' ');
-                type_char('\b');
+                putch('\b');
+                putch(' ');
+                putch('\b');
                 cmd_len--;
             }
-            else if (key=='\r')
+            else if (key=='\n')
             {
-                new_line();
+                putch('\n');
                 cmd[cmd_len] = '\0';
-                run_cmd(cmd, files, 0);  // let the handler decide
+
+                syscall_exec_cmd(cmd); // let the handler decide
+
                 cmd_len = 0;
                 break;
             }
@@ -37,11 +47,13 @@ int main()
             {
                 if (cmd_len >= CMD_MAX) continue;
                 cmd[cmd_len++] = key;
-                type_char(key);
+                putch(key);
             }
         }
 
         cmd_counter++;
     }
 }
+
+
 

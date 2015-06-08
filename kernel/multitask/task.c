@@ -62,7 +62,6 @@ task_t *create_task_from_mem(uint32_t base, uint32_t length, uint32_t need_sti) 
     task->length = length; 
     task->base = kmalloc(task->length);
 
-
     memset((void*)task->base, 0, task->length);
     memcpy((void*)task->base, (void*)base, length);
 

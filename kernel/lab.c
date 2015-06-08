@@ -16,6 +16,7 @@ _syscall1(int, sem_apply, int, value);
 _syscall1(int, sem_free, int, num);
 _syscall1(int, sem_wait, int, num);
 _syscall1(int, sem_signal, int, num);
+_syscall1(int, puts, char *, s);
 
 //task_t *create_task_from_mem(uint32_t base, uint32_t length) { // stack size included
 task_t* create_task_from_lab(void* base, void* endoflab, uint32_t stack) {
@@ -153,3 +154,15 @@ void lab8() {
     syscall_ls();
     exec("LAB8");
 }
+
+void lab10() {
+    syscall_ls();
+    exec("LAB10");
+}
+
+void shell() {
+    syscall_ls();
+    exec("SHELL");
+}
+
+

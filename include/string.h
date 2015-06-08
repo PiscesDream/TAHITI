@@ -34,11 +34,13 @@ static inline size_t strlen(const char *str)
 
 #include <stdbool.h>
 
-static inline bool strncmp(const char *p, const char *q, int n)
+static inline bool strncmp(char *p, char *q, int n)
 {
     while (n--) {
         if ((!*p && *q) || (!*q  && *p)) return false;
         if (!*p && !*q) return true;
+        if (*p >= 'a' && *p <= 'z') *p += 'A' - 'a';
+        if (*q >= 'a' && *q <= 'z') *q += 'A' - 'a';
         if (*p != *q) return false;
         p++, q++;
     }

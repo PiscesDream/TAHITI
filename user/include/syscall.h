@@ -2,10 +2,10 @@
 #define _SYSCALL_H_
 
 // format from linux      // arguments
-#define __NR_null       0
+#define __NR_exec_cmd   0 // 1
 #define __NR_null1      1 // 1
 #define __NR_null2      2 // 1
-#define __NR_null3      3 // 1
+#define __NR_puts       3 // 1
 #define __NR_fork       4 // 0
 #define __NR_null5      5 // 0
 #define __NR_exit       6 // 1
@@ -19,6 +19,7 @@
 #define __NR_sem_free   14 // 1
 #define __NR_sem_wait   15 // 1
 #define __NR_sem_signal 16 // 1
+#define __NR_print_path 17 // 0
 
 
 
@@ -81,5 +82,8 @@ int syscall_sem_apply();
 int syscall_sem_wait();
 int syscall_sem_signal();
 int syscall_sem_free();
+int syscall_sem_free();
+int syscall_puts(char *);
+int syscall_print_path();
 
 #endif

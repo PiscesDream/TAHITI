@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdbool.h>
 
 size_t strlen(const char *str) {
     size_t t = 0;
@@ -36,7 +37,5 @@ size_t strcspn(const char *str1, const char *str2) {
     }
     return index;
 }
-
-
 
 

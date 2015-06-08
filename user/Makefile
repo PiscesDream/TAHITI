@@ -8,6 +8,7 @@ ARCHIVES =
 DRIVERS  =
 LIBS	 = library/syscall.o library/stdio.o library/system.o library/string.o library/ctype.o library/semaphore.o\
 		   library/stdlib.o
+PROGRAMS = programs/lab8.bin programs/lab9.bin programs/lab10.bin programs/shell.bin
 
 %.o: %.nasm
 	$(NASM) -o $@ $<
@@ -17,9 +18,8 @@ LIBS	 = library/syscall.o library/stdio.o library/system.o library/string.o libr
 	$(LD) $(LDFLAGS) --oformat binary -o $@ $^
 
 	 #programs/program1.bin programs/program2.bin
-all: $(LIBS)\
-	 programs/lab8.bin programs/lab9.bin
-	mv ./programs/*.bin ./files/
+all: $(LIBS) $(PROGRAMS)
+	mv $(PROGRAMS) ./files/
 
 
 

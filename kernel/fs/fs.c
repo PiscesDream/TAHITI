@@ -90,8 +90,15 @@ void print_path(file_t *t) {
         return;
     else {
         print_path(t->parent); 
-        kprintf("/%s", t->filename);
+        kprintf("/%S", t->filename);
     }
+}
+
+int print_path_for_syscall(exception_status_t * t) {
+    if (fs_cur == fs_root)
+        kprintf("/");
+    else  
+        print_path(fs_cur);
 }
 
 
@@ -127,6 +134,29 @@ void tree_for_syscall(exception_status_t * t) {
     } while (tmp != fs_cur && tmp);
 }
 
+void tree() {
+    int deep = -1, i;
+    file_t * tmp = fs_cur;
+    __printfilename(fs_cur, 1);
+    int acc = 0;
+    do {
+        for (i=0;i<deep*2;++i) kprintf(" ");
+        if (tmp != fs_cur) kprintf("|-");
+        if ((tmp->attr & FS_ATTR_DIRECTORY) && !(tmp->attr & FS_ATTR_LINK)) {
+            __printfilename(tmp,1);
+            tmp = tmp->children;
+            deep++;
+        }
+        else {
+            __printfilename(tmp,1);
+            if (tmp->brother) tmp = tmp->brother;
+            else {tmp = tmp->parent->brother; deep--;}
+        }
+    } while (tmp != fs_cur && tmp);
+}
+
+
+// here debug
 static void __printfile(file_t * t) {
     int i = 7, j, acc = 0;
 
@@ -198,6 +228,29 @@ int ls_for_syscall(exception_status_t * t) {
     }return 0;
 }
 
+void ls() {
+    if (fs_cur == 0) 
+        kprintf("The file system is not prepared!\n");
+    else {
+        kprintf("\ncurrent path: ");
+        print_path(fs_cur);
+        kprintf("/\n");
+
+        file_t * tmp = fs_cur->children;
+        //       012345678901234567890123456789012345678901234567890123456789
+        kprintf("  FILE NAME        ATTRIBUTE      FILE SIZE     TIMESTAMP\n");
+        kprintf("==================|==============|=============|====================\n");
+        while (tmp) {
+            __printfile(tmp);
+            tmp = tmp->brother;
+        }
+        kprintf("\n");
+
+    }
+}
+
+
+
 
 file_t* find_file(const char *s) {
     if (fs_cur == 0) 
@@ -267,9 +320,7 @@ int exec(const char * s) {
             uint32_t cluster_count;
 
             char * buffer = (char *)read_hd_fat(tmp->cluster, &cluster_count);
-
-//            print_file(tmp);
-            task_t * t = create_task_from_mem((uint32_t)buffer, tmp->length+0x2000, 1); // stack size included
+            task_t * t = create_task_from_mem((uint32_t)buffer, tmp->length+0x2000, 0); // stack size included
 
             // 0x3b46
             kfree((uint32_t)buffer);
@@ -279,4 +330,13 @@ int exec(const char * s) {
             kprintf("%s doesn't exist!\n", s);
     }
     return false;
+}
+
+
+int exec_for_syscall(exception_status_t * t) {
+    char * cmd = (char * ) (cur_task->base + t->ebx);
+
+//    if (strncmp(tmp->filename, s, strlen(s)) ) {
+//    }
+
 }

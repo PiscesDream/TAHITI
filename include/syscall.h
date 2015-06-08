@@ -5,10 +5,10 @@ void init_syscall();
 
 //
 // format from linux      // arguments
-#define __NR_null       0
+#define __NR_exec_cmd   0 // 1
 #define __NR_null1      1 // 1
 #define __NR_null2      2 // 1
-#define __NR_null3      3 // 1
+#define __NR_puts       3 // 1
 #define __NR_fork       4 // 0
 #define __NR_share_fork 5 // 0
 #define __NR_exit       6 // 1
@@ -22,6 +22,7 @@ void init_syscall();
 #define __NR_sem_free   14 // 1
 #define __NR_sem_wait   15 // 1
 #define __NR_sem_signal 16 // 1
+#define __NR_print_path 17 // 0
 
 #define _syscall0(type,name) \
   type syscall_##name(void) \

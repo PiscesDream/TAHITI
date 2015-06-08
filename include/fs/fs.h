@@ -36,6 +36,9 @@ typedef struct __attribute__((__packed__)) __file_t{
 }file_t;
 
 void init_fs();
+
+void ls();
+void tree();
 int cd(const char * s);
 int cat(const char * s);
 int exec(const char * s);

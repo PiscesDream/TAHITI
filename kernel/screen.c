@@ -83,6 +83,9 @@ void scr_putch(char c) {
 void scr_puts(const char * s) {
     while (*s) scr_putch(*s++);
 }
+void scr_puts_space_stop(const char * s) {
+    while (*s && *s != ' ') scr_putch(*s++);
+}
 
 void _scr_putnum(uint32_t a, int base, char * alpha) {
     uint32_t x = a, acc = 1;
@@ -161,58 +164,18 @@ int scr_printf(const char *fmt, ...)
                 else 
                     scr_putdec(parameter);
             }
-              else if (*fmt == 's')
-                scr_puts((char*)parameter);
-        }
-        fmt++;
-    }
-    ap = NULL;
-}
-
-
-int user_printf(const char *fmt, ...) {
-    cli();
-    uint32_t parameter;
-    void * ap = (void*) &fmt;
-    ap += sizeof(fmt);
-
-    while (*fmt)
-    {
-        if (*fmt != '%')
-            scr_putch(*fmt);
-        else
-        {
-            fmt++;
-            //parameter = *(uint32_t*)ap;
-            asm volatile("movl %1, %%eax;"
-                         "movl %%ss:(%%eax), %%eax;"
-                         "movl %%eax, %0;"
-                         :"=m"(parameter)
-                         :"m"(ap));
-            ap += 4;
-            if (*fmt == 'c')
-                scr_putch(parameter);
-            else if (*fmt == 'x')
-                scr_puthex(parameter);
-            else if (*fmt == 'b')
-                scr_putbin(parameter);
-            else if (*fmt == 'd') {
-                if ((int)(parameter) < 0) {
-                    scr_putch('-');
-                    scr_putdec(-(int)parameter);
-                }
-                else 
-                    scr_putdec(parameter);
-            }
             else if (*fmt == 's')
                 scr_puts((char*)parameter);
+            else if (*fmt == 'S')
+                scr_puts_space_stop((char*)parameter);
+
         }
         fmt++;
     }
     ap = NULL;
-    sti();
 }
 
+// no use
 
 
 
@@ -232,4 +195,9 @@ void putch_for_syscall(exception_status_t * t) {
     if (scr_y >= 80) scr_y = 0, scr_x++;
     if (scr_x == SCR_BOTTOM+1) scroll_up();
     scr_update_cursor(scr_x, scr_y);
+}
+
+int puts_for_syscall(exception_status_t *t) {
+    char * s = cur_task->base + t->ebx;
+    scr_puts(s);
 }

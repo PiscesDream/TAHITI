@@ -14,8 +14,11 @@ void lab7_test_mm();
 void lab7_v1();
 void lab7_v2();
 
-void lab9();
-
 void lab8();
+void lab9();
+void lab10();
+void shell();
+
+
 
 #endif

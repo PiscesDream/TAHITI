@@ -6,5 +6,6 @@ int getpid();
 int fork();
 int exit(int);
 void switch_task();
+void print_path();
 
 #endif
