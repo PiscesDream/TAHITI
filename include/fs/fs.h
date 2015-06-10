@@ -1,6 +1,7 @@
 #ifndef _FS_H_
 #define _FS_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // readonly, hidden, system, volume label, subdirectory, archive, mountpoint, link
@@ -33,14 +34,20 @@ typedef struct __attribute__((__packed__)) __file_t{
     struct __file_t * children;
     struct __file_t * brother;
     struct __file_t * link;
+    
+    // file
+    int buffer_index;
 }file_t;
 
 void init_fs();
+file_t * find_file(const char *);
 
 void ls();
 void tree();
 int cd(const char * s);
 int cat(const char * s);
 int exec(const char * s);
+int rm(const char * s);
+int cp(const char * s, const char * ns);
 
 #endif

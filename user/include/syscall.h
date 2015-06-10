@@ -20,6 +20,11 @@
 #define __NR_sem_wait   15 // 1
 #define __NR_sem_signal 16 // 1
 #define __NR_print_path 17 // 0
+#define __NR_fopen      18 // 1
+#define __NR_fclose     19 // 1
+#define __NR_fputch     20 // 2
+#define __NR_fgetch     21 // 1
+#define __NR_fseek      22 // 2
 
 
 
@@ -48,7 +53,7 @@ return -1; \
 }
 
 #define _syscall2(type,name,atype,a,btype,b) \
-type name(atype a,btype b) \
+type syscall_##name(atype a,btype b) \
 { \
 long __res; \
 __asm__ volatile ("int $0x80" \
@@ -78,12 +83,22 @@ int syscall_getpid();
 int syscall_putch(char);
 int syscall_ls();
 int syscall_tree();
+
 int syscall_sem_apply();
 int syscall_sem_wait();
 int syscall_sem_signal();
 int syscall_sem_free();
 int syscall_sem_free();
+
 int syscall_puts(char *);
 int syscall_print_path();
+
+int syscall_fopen(char *);
+int syscall_fclose(int file);
+int syscall_fputch(int file, char c);
+int syscall_fgetch(int file);
+int syscall_fseek(int file, int pos);
+
+
 
 #endif

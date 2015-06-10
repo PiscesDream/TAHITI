@@ -43,7 +43,8 @@ int main() {
     printf("System starts. \n");
     asm volatile("int $127"); // force switch for the first time
 
-    shell();
+    //shell();
+    exec("SHELL");
 
     for (;;){
     }

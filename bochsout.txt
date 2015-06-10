@@ -31,7 +31,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0x2acb9b415010. after alignment, vector=0x2acb9b416000
+00000000000i[MEM0  ] allocated memory at 0x2ab13d1a1010. after alignment, vector=0x2ab13d1a2000
 00000000000i[MEM0  ] 16.00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=16
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/usr/share/bochs/BIOS-bochs-latest')
@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Mon Jun  8 12:31:22 2015 (time0=1433737882)
+00000000000i[CMOS  ] Setting initial clock to: Tue Jun  9 09:52:42 2015 (time0=1433814762)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -172,23 +172,23 @@
 00001876306i[BIOS  ] ata0-0: PCHS=80/2/18 translation=none LCHS=80/2/18
 00005753480i[BIOS  ] IDE time out
 00017844200i[BIOS  ] Booting from 0000:7c00
-01895088000p[SDL   ] >>PANIC<< User requested shutdown.
-01895088000i[CPU0  ] CPU is in protected mode (active)
-01895088000i[CPU0  ] CS.mode = 32 bit
-01895088000i[CPU0  ] SS.mode = 32 bit
-01895088000i[CPU0  ] EFER   = 0x00000000
-01895088000i[CPU0  ] | EAX=00000033  EBX=00000000  ECX=0006001d  EDX=00000032
-01895088000i[CPU0  ] | ESP=000040cc  EBP=00004198  ESI=00000000  EDI=00000000
-01895088000i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf zf af pf cf
-01895088000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-01895088000i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
-01895088000i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-01895088000i[CPU0  ] |  SS:0020( 0004| 0|  0) 001145e7 000041c0 0 1
-01895088000i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-01895088000i[CPU0  ] |  FS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-01895088000i[CPU0  ] |  GS:0020( 0004| 0|  0) 001145e7 000041c0 0 1
-01895088000i[CPU0  ] | EIP=00000fe1 (00000fe1)
-01895088000i[CPU0  ] | CR0=0x60000011 CR2=0x00000000
-01895088000i[CPU0  ] | CR3=0x00000000 CR4=0x00000000
-01895088000i[CMOS  ] Last time is 1433738355 (Mon Jun  8 12:39:15 2015)
-01895088000i[SIM   ] quit_sim called with exit code 1
+00173592000p[SDL   ] >>PANIC<< POWER button turned off.
+00173592000i[CPU0  ] CPU is in protected mode (active)
+00173592000i[CPU0  ] CS.mode = 32 bit
+00173592000i[CPU0  ] SS.mode = 32 bit
+00173592000i[CPU0  ] EFER   = 0x00000000
+00173592000i[CPU0  ] | EAX=00000001  EBX=00000003  ECX=5c240000  EDX=00004500
+00173592000i[CPU0  ] | ESP=0008ffe0  EBP=0008ffe8  ESI=000e0000  EDI=00000000
+00173592000i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df IF tf sf zf af pf cf
+00173592000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+00173592000i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
+00173592000i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00173592000i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00173592000i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00173592000i[CPU0  ] |  FS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00173592000i[CPU0  ] |  GS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00173592000i[CPU0  ] | EIP=000000a6 (000000a6)
+00173592000i[CPU0  ] | CR0=0x60000011 CR2=0x00000000
+00173592000i[CPU0  ] | CR3=0x00000000 CR4=0x00000000
+00173592000i[CMOS  ] Last time is 1433814805 (Tue Jun  9 09:53:25 2015)
+00173592000i[SIM   ] quit_sim called with exit code 1

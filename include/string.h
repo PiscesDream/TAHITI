@@ -32,6 +32,7 @@ static inline size_t strlen(const char *str)
     return _result;
 }
 
+
 #include <stdbool.h>
 
 static inline bool strncmp(char *p, char *q, int n)
@@ -46,6 +47,20 @@ static inline bool strncmp(char *p, char *q, int n)
     }
     return true;
 }
+
+static inline bool strcmp_space(char *p, char *q)
+{
+    while (*p && *q && *p!=' ' && *q!=' ') {
+        if (*p >= 'a' && *p <= 'z') *p += 'A' - 'a';
+        if (*q >= 'a' && *q <= 'z') *q += 'A' - 'a';
+        if (*p != *q) return false;
+        p++, q++;
+    }
+    if ((*p && *p != ' ')||(*q && *q != ' ')) return false;
+    return true;
+}
+
+
 
 #endif
 

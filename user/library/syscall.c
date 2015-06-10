@@ -16,5 +16,11 @@ _syscall1(int, sem_signal, int, num);
 _syscall1(int, exec_cmd, char *, cmd);
 _syscall0(int, print_path);
 
+_syscall1(int, fopen, char *, filename);
+_syscall1(int, fclose, int, file);
+_syscall2(int, fputch, int, file, char, c);
+_syscall1(int, fgetch, int, file);
+_syscall2(int, fseek, int, file, int, pos);
+
 
 

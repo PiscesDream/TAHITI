@@ -61,7 +61,7 @@ void scan_dir(file_t * dir) {
     uint32_t offset;
     for (offset = 0; offset < buffer_length; offset += 32) { // 512 buffer
         memcpy((void*)tmpf, buffer + offset, 32);
-        if (tmpf->attr > 0) { // file exist
+        if (tmpf->filename[0] != 0) { // file exist
 //kprintf("%s[%s]\n", dir->filename, tmpf->filename);
             tmpf->brother = dir->children; dir->children = tmpf; tmpf->parent = dir;
             tmpf->children = 0;
@@ -195,11 +195,11 @@ static void __printfile(file_t * t) {
 
     //date
     kprintf("%d/%d/%d %d:%d:%d",
-                (t->modify_date >> 9) + 1980,
-                (t->modify_date >> 5) & 0b1111,
+                (t->modify_date / 512) + 1980,
+                (t->modify_date / 32) & 0b1111,
                 t->modify_date & 0b11111,
-                (t->modify_time >> 10) & 0b11111,
-                (t->modify_time >> 5) & 0b111111,
+                (t->modify_time / 2048) & 0b11111,
+                (t->modify_time / 32) & 0b111111,
                 (t->modify_time & 0b11111) * 2
             );
     
@@ -258,7 +258,7 @@ file_t* find_file(const char *s) {
     else {
         file_t * tmp = fs_cur->children;
         while (tmp) {
-            if (strncmp(tmp->filename, s, strlen(s)) ) 
+            if (strcmp_space(tmp->filename, s)) 
                 return tmp;
             tmp = tmp->brother;
         }
@@ -339,4 +339,127 @@ int exec_for_syscall(exception_status_t * t) {
 //    if (strncmp(tmp->filename, s, strlen(s)) ) {
 //    }
 
+}
+
+void delete_file(file_t * t) {    
+    void * buffer;
+    uint32_t buffer_length;
+
+    if (fs_cur == fs_root) { 
+        buffer = read_hd_continuous(2 * ((main_hd->BPB_FATSz16-1)/main_hd->BPB_SecPerClus+1) + 1 , fs_root->length);
+        buffer_length = fs_root->length;
+    }
+    else { 
+        buffer = read_hd_fat(fs_cur->cluster, &buffer_length);
+        buffer_length *= 512;
+    }
+    
+    file_t * tmpf = (void *)kmalloc(sizeof(file_t));
+    uint32_t offset;
+    for (offset = 0; offset < buffer_length; offset += 32) { // 512 buffer
+        memcpy((void*)tmpf, buffer + offset, 32);
+        if (strncmp(tmpf->filename, t->filename, 8)) {
+            memset(buffer+offset, 0, 32);
+            file_t * parent = t->parent;
+            release_fat(t->cluster);
+            if (parent->children == t) 
+                parent->children = t->brother; 
+            else {
+                tmpf = parent->children;
+                while (tmpf->brother != t) tmpf = tmpf->brother;
+                tmpf->brother = t->brother;
+            }
+            break;
+        }
+    }
+
+    if (fs_cur == fs_root)  
+        write_hd_continuous(2 * ((main_hd->BPB_FATSz16-1)/main_hd->BPB_SecPerClus+1) + 1 , fs_root->length, buffer);
+    else  
+        write_hd_fat(fs_cur->cluster, buffer);
+
+    kfree((uint32_t)buffer);
+    kfree((uint32_t)tmpf);
+
+}
+
+int rm(const char * s) {
+    if (fs_cur == 0) 
+        kprintf("The file system is not prepared!\n");
+    else {
+        file_t * tmp = find_file(s); 
+        if (tmp) 
+            delete_file(tmp);
+        else 
+            kprintf("%s doesn't exist!\n", s);
+    }
+    return false;
+}
+
+void copy_file(file_t * oldf, const char *ns) {
+    // file struct
+    file_t * newf = (file_t *)kmalloc(sizeof(file_t));
+    memcpy((void *)newf, (void *)oldf, sizeof(file_t));
+    newf->brother = newf->parent->children;
+    newf->parent->children = newf;
+    int i = 0;
+    for (;*(ns+i) && i<8;++i) newf->filename[i] = *(ns+i);
+
+    // fat
+    static uint32_t cluster_count;
+    cluster_count = 0;
+    void * buffer = read_hd_fat(oldf->cluster, &cluster_count); 
+    uint32_t first_cluster = apply_fat(cluster_count);
+    write_hd_fat(first_cluster, buffer);
+
+    kfree((uint32_t)buffer);
+
+    // directory
+    uint32_t buffer_length;
+
+    if (fs_cur == fs_root) { 
+        buffer = read_hd_continuous(2 * ((main_hd->BPB_FATSz16-1)/main_hd->BPB_SecPerClus+1) + 1 , fs_root->length);
+        buffer_length = fs_root->length;
+    }
+    else { 
+        buffer = read_hd_fat(fs_cur->cluster, &buffer_length);
+        buffer_length *= 512;
+    }
+    
+    file_t * tmpf = (void *)kmalloc(sizeof(file_t));
+    uint32_t offset;
+    for (offset = 0; offset < buffer_length; offset += 32) { // 512 buffer
+        memcpy((void*)tmpf, buffer + offset, 32);
+        if (tmpf->filename[0] == 0) {
+            memcpy(buffer+offset, (void *)newf, 32);
+            break;
+        }
+    }
+
+    if (fs_cur == fs_root)  
+        write_hd_continuous(2 * ((main_hd->BPB_FATSz16-1)/main_hd->BPB_SecPerClus+1) + 1 , fs_root->length, buffer);
+    else  
+        write_hd_fat(fs_cur->cluster, buffer);
+
+    kfree((uint32_t)buffer);
+    kfree((uint32_t)tmpf);
+
+
+}
+
+int cp(const char * s, const char * ns) {
+    if (fs_cur == 0) 
+        kprintf("The file system is not prepared!\n");
+    else {
+        file_t * tmp = find_file(s); 
+        if (tmp) { 
+            if (find_file(ns))
+                kprintf("%S exists! \n", ns);
+            else
+                copy_file(tmp, ns);
+        }
+        else 
+            kprintf("%S doesn't exist!\n", s);
+    }
+    return false;
 }

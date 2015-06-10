@@ -14,13 +14,23 @@ extern int share_fork_for_syscall(exception_status_t * t);
 extern int getpid_for_syscall(exception_status_t * t);
 extern int get_key_for_syscall(exception_status_t * t);
 extern int tree_for_syscall(exception_status_t * t);
+
 extern int sem_apply_for_syscall(exception_status_t *t);
 extern int sem_free_for_syscall(exception_status_t *t);
 extern int sem_wait_for_syscall(exception_status_t *t);
 extern int sem_signal_for_syscall(exception_status_t *t);
+
 extern int puts_for_syscall(exception_status_t *t);
+
 extern int exec_cmd_for_syscall(exception_status_t *t);
 extern int print_path_for_syscall(exception_status_t * t);
+
+extern int fopen_for_syscall (exception_status_t * t);
+extern int fclose_for_syscall(exception_status_t * t) ;
+extern int fputch_for_syscall(exception_status_t * t) ;
+extern int fgetch_for_syscall(exception_status_t * t) ;
+extern int fseek_for_syscall (exception_status_t * t) ;
+
 
 static void syscall_handler(exception_status_t *t);
 static void *syscalls[64] = {
@@ -41,7 +51,12 @@ static void *syscalls[64] = {
     &sem_free_for_syscall,    
     &sem_wait_for_syscall,
     &sem_signal_for_syscall,
-    &print_path_for_syscall
+    &print_path_for_syscall,
+    &fopen_for_syscall, 
+    &fclose_for_syscall,
+    &fputch_for_syscall,
+    &fgetch_for_syscall,
+    &fseek_for_syscall 
 };
 static uint32_t syscalls_count = 64;
 

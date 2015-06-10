@@ -31,11 +31,19 @@ typedef struct __attribute__((__packed__)) __hd_info_t{
     char ending[2];
 } hd_info_t;
 
-void read_hd_to_addr(uint32_t, void *);
 void load_main_hd(hd_info_t *);
 void init_hd();
 uint32_t get_next_cluster(int cluster);
 void* read_hd_continuous(uint32_t sector, uint32_t length); 
-void* read_hd_fat(uint32_t cluster, uint32_t *cluster_count); 
+void* read_hd_fat(uint32_t cluster, uint32_t*cluster_count); 
+void write_hd_continuous(uint32_t sector, uint32_t length, void * content);
+void write_hd_fat(uint32_t cluster, void * content) ;
+void release_fat(uint32_t cluster) ;
+int apply_fat(uint32_t cluster_count) ;
+
+
+// asm
+void read_hd_to_addr(uint32_t, void *);
+void write_addr_to_hd(void *, uint32_t);
 
 #endif

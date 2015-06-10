@@ -39,6 +39,7 @@ int main()
                 cmd[cmd_len] = '\0';
 
                 syscall_exec_cmd(cmd); // let the handler decide
+                switch_task();
 
                 cmd_len = 0;
                 break;

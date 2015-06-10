@@ -1,6 +1,15 @@
 #define outportb(port, value) \
 	__asm__ ("outb %%al, %%dx"::"a"(value), "d"(port))
 
+#define out_byte(port, value) \
+	__asm__ ("outb %%al, %%dx"::"a"(value), "d"(port))
+
+#define in_byte(port) ({\
+	unsigned char _result; \
+	__asm__ ("inb %%dx, %%al":"=a"(_result):"d"(port)); \
+	_result; \
+})
+
 #define inportb(port) ({\
 	unsigned char _result; \
 	__asm__ ("inb %%dx, %%al":"=a"(_result):"d"(port)); \

@@ -24,6 +24,12 @@ void init_syscall();
 #define __NR_sem_signal 16 // 1
 #define __NR_print_path 17 // 0
 
+#define __NR_fopen      18 // 1
+#define __NR_fclose     19 // 1
+#define __NR_fputch     20 // 2
+#define __NR_fgetch     21 // 1
+#define __NR_fseek      22 // 2
+
 #define _syscall0(type,name) \
   type syscall_##name(void) \
 { \
