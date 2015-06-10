@@ -39,12 +39,13 @@ int main()
                 cmd[cmd_len] = '\0';
 
                 syscall_exec_cmd(cmd); // let the handler decide
+//                wait();
                 switch_task();
 
                 cmd_len = 0;
                 break;
             }
-            else
+            else if (key != 0)
             {
                 if (cmd_len >= CMD_MAX) continue;
                 cmd[cmd_len++] = key;

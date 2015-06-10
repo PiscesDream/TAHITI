@@ -20,7 +20,7 @@ extern int sem_free_for_syscall(exception_status_t *t);
 extern int sem_wait_for_syscall(exception_status_t *t);
 extern int sem_signal_for_syscall(exception_status_t *t);
 
-extern int puts_for_syscall(exception_status_t *t);
+//extern int puts_for_syscall(exception_status_t *t);
 
 extern int exec_cmd_for_syscall(exception_status_t *t);
 extern int print_path_for_syscall(exception_status_t * t);
@@ -37,7 +37,7 @@ static void *syscalls[64] = {
     &exec_cmd_for_syscall,
     0,
     0,
-    &puts_for_syscall,
+    0, //&puts_for_syscall,
     &fork_for_syscall,
     &share_fork_for_syscall,
     &exit_for_syscall,

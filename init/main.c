@@ -44,7 +44,14 @@ int main() {
     asm volatile("int $127"); // force switch for the first time
 
     //shell();
+    switch_video_page(1);
     exec("SHELL");
+    switch_video_page(2);
+    exec("SHELL");
+    switch_video_page(3);
+    exec("SHELL");
+    switch_video_page(1);
+
 
     for (;;){
     }

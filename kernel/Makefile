@@ -24,11 +24,12 @@ OBJS  = debug.o screen.o asm.o panic.o\
 		interrupt/timer.o interrupt/keyboard.o\
 	 	mm/heap.o\
 		syscall.o\
-		multitask/task.o  multitask/ldt.o multitask/schedule.o\
+		multitask/task.o  multitask/schedule.o\
 		fs/hd.o fs/fs.o fs/fio.o\
 		semaphore.o\
 		exec_cmd.o 
 #lab.o\
+# multitask/ldt.o
 #multitask/tss.o
 #mm/paging.o 
 

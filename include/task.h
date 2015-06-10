@@ -47,6 +47,9 @@ typedef struct __task_t {
     // used in semaphore;
     struct __task_t * semaphore_next;
 
+    // video page
+    uint8_t video_page;
+
 
 //    uint16_t tss_gdt_id;
 //    uint32_t tss_base;

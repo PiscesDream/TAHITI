@@ -27,11 +27,17 @@ task_t* create_empty_task(uint32_t need_sti) {
     task_t * task = (task_t*)kmalloc(sizeof(task_t)); 
     memset((void *)task, 0, sizeof(task_t));
 
+    task->parent = cur_task;
+    task->brothers = cur_task->children;
+    cur_task->children = task; 
+    cur_task->children_count ++;
+
     task->pid = pid_counter++;
     task->status = TASK_STATUS_READY;
     task->privilege = 0x0; // fixed
 
     task->counter = task->priority = 1;
+    task->video_page = cur_video_page; // lab 11
 
     if (task_queue) { //queue not empty
         task_t * tmp = task_queue;

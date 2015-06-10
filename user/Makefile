@@ -8,7 +8,8 @@ ARCHIVES =
 DRIVERS  =
 LIBS	 = library/syscall.o library/stdio.o library/system.o library/string.o library/ctype.o library/semaphore.o\
 		   library/stdlib.o library/fio.o
-PROGRAMS = programs/lab8.bin programs/lab9.bin programs/lab10.bin programs/shell.bin
+PROGRAMS = programs/shell.bin programs/lab11.bin programs/lab10.bin 
+#programs/lab8.bin programs/lab9.bin 
 
 %.o: %.nasm
 	$(NASM) -o $@ $<

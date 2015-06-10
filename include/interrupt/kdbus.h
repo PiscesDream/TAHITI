@@ -1,6 +1,13 @@
 #ifndef _KDBUS_H_
 #define _KDBUS_H_
 
+#define KEY_ALT 0x38
+#define KEY_CTRL 0x1d
+#define KEY_F1  0x3b
+#define KEY_F2  0x3c
+#define KEY_F3  0x3d
+#define KEY_F4  0x3e
+
 unsigned char kbdus[128] =
 {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */

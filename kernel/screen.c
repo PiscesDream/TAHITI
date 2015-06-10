@@ -3,25 +3,33 @@
 #include <stdint.h>
 #include <screen.h>
 #include <utils/system.h>
+#include <task.h>
+
+#define VIDEO_PAGE_COUNT 4
+int curx[VIDEO_PAGE_COUNT+1] = {0};
+int cury[VIDEO_PAGE_COUNT+1] = {0};
+uint16_t * video_mem, * video_mem0 = (uint16_t *)  0xb8000;
+uint16_t cur_video_page;
+
 
 static int scr_x, scr_y, store_x = 0, store_y = 0;
 static int hidemode = 0;
-uint16_t * const VEDIO_MEM = (uint16_t *) 0xb8000;
+//uint16_t * const VEDIO_MEM = (uint16_t *) 0xb8000;
 const int ATTR = 0x0f00;
 
 void cls() {
-    uint16_t *p = (uint16_t *) VEDIO_MEM;
+    uint16_t *p = (uint16_t *) video_mem;
     int t = 80*25;
     while (t--) *p++=0x0f00;
     scr_x = scr_y = 0;
 }
 
-void scroll_up()
+void scroll_up(uint16_t *start)
 {
     uint16_t blank = ' ' | (ATTR << 8);
     int scroll_len = scr_x-SCR_BOTTOM;
-    memcpy((void *)VEDIO_MEM, (void*)(VEDIO_MEM + scroll_len*80), (SCR_BOTTOM) * 80 * 2);
-    memsetw((void *)(VEDIO_MEM+(SCR_BOTTOM)*80), blank, scroll_len*80);
+    memcpy((void *)start, (void*)(start+ scroll_len*80), (SCR_BOTTOM) * 80 * 2);
+    memsetw((void *)(start+(SCR_BOTTOM)*80), blank, scroll_len*80);
     scr_x--;
 }
 
@@ -71,10 +79,10 @@ void scr_putch(char c) {
     else if (c == '\n')
         scr_y = 0, scr_x++;
     else if (c >= ' ') 
-        *(VEDIO_MEM+scr_x*80+scr_y) = ATTR | c, scr_y++;
+        *(video_mem0+scr_x*80+scr_y) = ATTR | c, scr_y++;
 
     if (scr_y >= 80) scr_y = 0, scr_x++;
-    if (scr_x == SCR_BOTTOM+1) scroll_up();
+    if (scr_x == SCR_BOTTOM+1) scroll_up(video_mem0);
     scr_update_cursor(scr_x, scr_y);
 
     asm volatile("movw %fs, %ax;movw %ax, %ds");
@@ -175,12 +183,16 @@ int scr_printf(const char *fmt, ...)
     ap = NULL;
 }
 
-// no use
-
-
 
 
 void putch_for_syscall(exception_status_t * t) {
+    curx[cur_video_page] = scr_x;
+    cury[cur_video_page] = scr_y;
+
+    video_mem = (uint16_t*)(0xb8000+4000*cur_task->video_page); 
+    scr_x = curx[cur_task->video_page];
+    scr_y = cury[cur_task->video_page];
+
     char c = (char)(t->ebx);
     if (c == 0x08)
         scr_y--;
@@ -190,14 +202,47 @@ void putch_for_syscall(exception_status_t * t) {
         scr_y = 0;
     else if (c == '\n')
         scr_y = 0, scr_x++;
-    else if (c >= ' ') 
-        *(VEDIO_MEM+scr_x*80+scr_y) = ATTR | c, scr_y++;
+    else if (c >= ' ') {
+        *(video_mem+scr_x*80+scr_y) = ATTR | c, scr_y;
+        if (cur_task->video_page == cur_video_page)
+            *(video_mem0+scr_x*80+scr_y) = ATTR | c, scr_y;
+        scr_y++;
+    }
     if (scr_y >= 80) scr_y = 0, scr_x++;
-    if (scr_x == SCR_BOTTOM+1) scroll_up();
+    if (scr_x == SCR_BOTTOM+1) {
+        scroll_up(video_mem);
+        if (cur_task->video_page == cur_video_page){
+            scr_x++;
+            scroll_up(video_mem0);
+        }
+    }
+    curx[cur_task->video_page] = scr_x;
+    cury[cur_task->video_page] = scr_y;
+
+    scr_x = curx[cur_video_page];
+    scr_y = cury[cur_video_page];
     scr_update_cursor(scr_x, scr_y);
 }
 
-int puts_for_syscall(exception_status_t *t) {
-    char * s = cur_task->base + t->ebx;
-    scr_puts(s);
+//  int puts_for_syscall(exception_status_t *t) {
+//      char * s = (char*)(cur_task->base + t->ebx);
+//      scr_puts(s);
+//  }
+
+extern void reset_kb_buffer();
+void switch_video_page(int page) {
+    reset_kb_buffer();
+    // store
+    memcpy((void*)(0xb8000+ 4000*cur_video_page), (void*)(0xb8000), 80*25*2); 
+    curx[cur_video_page] = scr_x;
+    cury[cur_video_page] = scr_y;
+
+    // load
+    memcpy((void*)(0xb8000), (void*)(0xb8000+ 4000*page), 80*25*2); 
+    scr_update_cursor(curx[page], cury[page]);
+    cur_video_page = page;
+    
+    scr_temp_move_to(24, 30);
+    kprintf("Terminal[%d]", page); 
+    scr_temp_retrieve();
 }
